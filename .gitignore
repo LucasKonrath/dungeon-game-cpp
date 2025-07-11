@@ -169,9 +169,10 @@ $RECYCLE.BIN/
 
 # Project specific executables
 simple_tests
-dungeon_game
 gtest_tests
 callgraph_generator
+test_gcc
+test_clang
 
 # Callgraph files
 callgraph_trace.txt

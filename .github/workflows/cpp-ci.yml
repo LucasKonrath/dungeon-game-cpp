@@ -1,0 +1,195 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        compiler: [gcc, clang]
+        exclude:
+          # Windows doesn't have gcc/clang in the same way
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+        include:
+          # Add MSVC for Windows
+          - os: windows-latest
+            compiler: msvc
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up build environment (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          sudo apt-get install -y gcc g++
+          echo "CC=gcc" >> $GITHUB_ENV
+          echo "CXX=g++" >> $GITHUB_ENV
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          sudo apt-get install -y clang
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+        fi
+
+    - name: Set up build environment (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          brew install gcc
+          echo "CC=gcc-13" >> $GITHUB_ENV
+          echo "CXX=g++-13" >> $GITHUB_ENV
+        elif [ "${{ matrix.compiler }}" = "clang" ]; then
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+        fi
+
+    - name: Set up build environment (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.1
+
+    - name: Build and test with Make (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        echo "Using compiler: ${{ matrix.compiler }}"
+        echo "CC: $CC, CXX: $CXX"
+        
+        # Build all targets
+        make all
+        
+        # Run tests
+        make test
+        
+        # Test callgraph generation
+        make callgraph
+
+    - name: Build and test with CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release
+        
+        # Run tests (adjust for Windows executable names)
+        ./Release/simple_tests.exe || ./simple_tests.exe
+
+    - name: Build and test with CMake (Unix - alternative)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir build-cmake
+        cd build-cmake
+        cmake ..
+        make
+        
+        # Run tests
+        ./simple_tests
+        
+        echo "✓ CMake build successful"
+
+    - name: Verify test output
+      if: matrix.os != 'windows-latest'
+      run: |
+        echo "=== Verifying test results ==="
+        ./simple_tests | grep -E "(PASS|FAIL|All tests passed)"
+        
+        echo "=== Verifying callgraph generation ==="
+        ls -la callgraph_trace.txt callgraph.dot
+        
+        echo "=== Sample trace output ==="
+        head -20 callgraph_trace.txt
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.compiler }}
+        path: |
+          callgraph_trace.txt
+          callgraph.dot
+          simple_tests
+        retention-days: 7
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format cppcheck
+    
+    - name: Check code formatting
+      run: |
+        echo "=== Checking code formatting ==="
+        find . -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror
+        echo "✓ Code formatting check passed"
+    
+    - name: Run static analysis
+      run: |
+        echo "=== Running static analysis ==="
+        cppcheck --enable=all --error-exitcode=1 --suppress=missingIncludeSystem *.cpp
+        echo "✓ Static analysis passed"
+    
+    - name: Check for common issues
+      run: |
+        echo "=== Checking for common issues ==="
+        
+        # Check for TODO/FIXME comments
+        if grep -r "TODO\|FIXME" *.cpp *.h 2>/dev/null; then
+          echo "⚠️ Found TODO/FIXME comments"
+        else
+          echo "✓ No TODO/FIXME comments found"
+        fi
+        
+        # Check for memory leaks patterns (basic check)
+        if grep -r "new\|malloc" *.cpp 2>/dev/null | grep -v "delete\|free"; then
+          echo "⚠️ Found potential memory allocation without deallocation"
+        else
+          echo "✓ No obvious memory leak patterns found"
+        fi
+
+  performance:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build with optimizations
+      run: |
+        clang++ -std=c++11 -O3 -DNDEBUG -o simple_tests_optimized simple_tests.cpp
+        clang++ -std=c++11 -O3 -DNDEBUG -o callgraph_generator_optimized callgraph_generator.cpp
+    
+    - name: Run performance tests
+      run: |
+        echo "=== Performance Test Results ==="
+        
+        echo "Running optimized tests..."
+        time ./simple_tests_optimized
+        
+        echo "Running optimized callgraph..."
+        time ./callgraph_generator_optimized
+        
+        echo "✓ Performance tests completed"
+    
+    - name: Memory usage check
+      run: |
+        echo "=== Memory Usage Check ==="
+        
+        # Run with time to get memory usage stats
+        /usr/bin/time -v ./simple_tests_optimized 2>&1 | grep -E "Maximum resident set size|User time|System time"
+        
+        echo "✓ Memory usage check completed"

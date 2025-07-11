@@ -9,6 +9,20 @@ The visual callgraph shows the tree structure with:
 - 🔴 **Red**: Out-of-bounds calls (pruned)
 
 ![callgraph](image.png)
+
+## CI/CD Status
+
+[![Build Status](https://github.com/YOUR_USERNAME/dungeon-game-cpp/workflows/Build%20Status/badge.svg)](https://github.com/YOUR_USERNAME/dungeon-game-cpp/actions)
+[![C++ Tests](https://github.com/YOUR_USERNAME/dungeon-game-cpp/workflows/C%2B%2B%20Tests/badge.svg)](https://github.com/YOUR_USERNAME/dungeon-game-cpp/actions)
+
+This project uses GitHub Actions for continuous integration. The CI pipeline automatically:
+- ✅ Builds the project on Ubuntu and macOS
+- ✅ Runs all unit tests
+- ✅ Generates callgraph traces
+- ✅ Tests with both GCC and Clang compilers
+- ✅ Validates CMake build system
+- ✅ Uploads test artifacts
+
 ## Files
 
 - `dungeon-game.cpp` - Original dungeon game implementation

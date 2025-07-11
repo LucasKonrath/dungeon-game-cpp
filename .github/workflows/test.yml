@@ -1,0 +1,99 @@
+name: C++ Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up C++ environment
+      run: |
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+        elif [ "$RUNNER_OS" = "macOS" ]; then
+          # Xcode command line tools should already be available
+          xcode-select --install 2>/dev/null || true
+        fi
+
+    - name: Build tests
+      run: |
+        echo "Building C++ tests..."
+        make all
+
+    - name: Run unit tests
+      run: |
+        echo "Running unit tests..."
+        make test
+
+    - name: Generate callgraph
+      run: |
+        echo "Generating callgraph..."
+        make callgraph
+        echo "✓ Callgraph generated successfully"
+
+    - name: Verify test results
+      run: |
+        echo "=== Test Summary ==="
+        if ./simple_tests | grep -q "All tests passed!"; then
+          echo "✅ All tests passed successfully!"
+        else
+          echo "❌ Some tests failed"
+          exit 1
+        fi
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-artifacts-${{ matrix.os }}
+        path: |
+          callgraph_trace.txt
+          callgraph.dot
+        retention-days: 5
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential clang
+
+    - name: Test GCC build
+      run: |
+        echo "Testing with GCC..."
+        g++ -std=c++11 -Wall -Wextra -Werror -o test_gcc simple_tests.cpp
+        ./test_gcc | head -5
+
+    - name: Test Clang build  
+      run: |
+        echo "Testing with Clang..."
+        clang++ -std=c++11 -Wall -Wextra -Werror -o test_clang simple_tests.cpp
+        ./test_clang | head -5
+
+    - name: Test CMake build
+      run: |
+        echo "Testing CMake build..."
+        mkdir build && cd build
+        cmake ..
+        make
+        ./simple_tests | head -5
