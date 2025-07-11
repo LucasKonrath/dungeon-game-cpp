@@ -2,10 +2,18 @@
 
 This repository contains unit tests for the DungeonGame C++ implementation.
 
+The visual callgraph shows the tree structure with:
+- 🟢 **Green**: Entry point (`calculateMinimumHP`)
+- 🟡 **Yellow**: Recursive calls exploring valid cells
+- 🟠 **Orange**: Princess room (destination)
+- 🔴 **Red**: Out-of-bounds calls (pruned)
+
+![callgraph](image.png)
 ## Files
 
 - `dungeon-game.cpp` - Original dungeon game implementation
 - `simple_tests.cpp` - Self-contained unit tests with custom test framework
+- `callgraph_generator.cpp` - Generates call traces and visual callgraphs
 - `Makefile` - Build automation
 - `CMakeLists.txt` - CMake build configuration
 
@@ -34,6 +42,53 @@ cmake ..
 make
 ./simple_tests
 ```
+
+## Generating Callgraphs
+
+You can generate detailed call traces and visual callgraphs to understand how the algorithm executes:
+
+### Generate Call Trace
+```bash
+# Generate text trace of function calls
+make callgraph
+cat callgraph_trace.txt
+```
+
+### Generate Visual Callgraph
+First install Graphviz (for visualization):
+```bash
+# On macOS with Homebrew
+brew install graphviz
+
+# On Ubuntu/Debian
+sudo apt-get install graphviz
+```
+
+Then generate the visual callgraph:
+```bash
+# Generate PNG and SVG callgraph images
+make callgraph-viz
+
+# Or manually:
+dot -Tpng callgraph.dot -o callgraph.png
+dot -Tsvg callgraph.dot -o callgraph.svg
+```
+
+### Example Callgraph Output
+
+For a 2x2 dungeon:
+```
+  [-3,  5]
+  [ 1, -4]
+```
+
+The call trace shows:
+1. `calculateMinimumHP` starts the process
+2. `recurse(0,0)` explores from top-left
+3. Explores both right `(0,1)` and down `(1,0)` paths
+4. Eventually reaches princess room `(1,1)` 
+5. Uses memoization to avoid recalculation
+6. Returns minimum HP needed: **4**
 
 ## Test Cases Covered
 

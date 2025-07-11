@@ -171,6 +171,13 @@ $RECYCLE.BIN/
 simple_tests
 dungeon_game
 gtest_tests
+callgraph_generator
+
+# Callgraph files
+callgraph_trace.txt
+callgraph.dot
+callgraph.png
+callgraph.svg
 
 # Backup files
 *.bak
