@@ -14,7 +14,14 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Build
-      run: make all
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Files available:"
+        ls -la
+        echo "Building with make..."
+        make all
       
     - name: Test
-      run: make test
+      run: |
+        echo "Running tests..."
+        make test

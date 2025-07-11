@@ -64,14 +64,29 @@ jobs:
       run: |
         echo "Using compiler: ${{ matrix.compiler }}"
         echo "CC: $CC, CXX: $CXX"
+        echo "Current directory: $(pwd)"
+        echo "Files in directory:"
+        ls -la
+        
+        # Check if Makefile exists and is readable
+        if [ -f "Makefile" ]; then
+          echo "Makefile found, checking content:"
+          head -20 Makefile
+        else
+          echo "ERROR: Makefile not found!"
+          exit 1
+        fi
         
         # Build all targets
+        echo "Running make all..."
         make all
         
         # Run tests
+        echo "Running make test..."
         make test
         
         # Test callgraph generation
+        echo "Running make callgraph..."
         make callgraph
 
     - name: Build and test with CMake (Windows)

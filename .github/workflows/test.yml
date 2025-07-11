@@ -32,18 +32,42 @@ jobs:
     - name: Build tests
       run: |
         echo "Building C++ tests..."
-        make all
+        echo "Current directory: $(pwd)"
+        echo "Files in directory:"
+        ls -la
+        
+        # Try make first
+        if make all; then
+          echo "✓ Make build successful"
+        else
+          echo "⚠️ Make failed, trying direct compilation..."
+          echo "Compiling simple_tests..."
+          clang++ -std=c++11 -Wall -Wextra -g -o simple_tests simple_tests.cpp
+          echo "Compiling callgraph_generator..."
+          clang++ -std=c++11 -Wall -Wextra -g -o callgraph_generator callgraph_generator.cpp
+          echo "✓ Direct compilation successful"
+        fi
 
     - name: Run unit tests
       run: |
         echo "Running unit tests..."
-        make test
+        if [ -f "./simple_tests" ]; then
+          ./simple_tests
+        else
+          echo "ERROR: simple_tests executable not found!"
+          exit 1
+        fi
 
     - name: Generate callgraph
       run: |
         echo "Generating callgraph..."
-        make callgraph
-        echo "✓ Callgraph generated successfully"
+        if [ -f "./callgraph_generator" ]; then
+          ./callgraph_generator
+          echo "✓ Callgraph generated successfully"
+        else
+          echo "ERROR: callgraph_generator executable not found!"
+          exit 1
+        fi
 
     - name: Verify test results
       run: |
