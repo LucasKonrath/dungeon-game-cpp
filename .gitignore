@@ -173,12 +173,24 @@ gtest_tests
 callgraph_generator
 test_gcc
 test_clang
+profiling_tests
+profiling_optimized
+profiling_debug
 
 # Callgraph files
 callgraph_trace.txt
 callgraph.dot
 callgraph.png
 callgraph.svg
+
+# Profiling output files
+instruments_output.trace
+callgrind.out
+cachegrind.out.*
+massif.out.*
+helgrind.out.*
+*.prof
+perf.data*
 
 # Backup files
 *.bak

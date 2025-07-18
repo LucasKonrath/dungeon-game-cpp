@@ -8,6 +8,74 @@ The visual callgraph shows the tree structure with:
 - 🟠 **Orange**: Princess room (destination)
 - 🔴 **Red**: Out-of-bounds calls (pruned)
 
+## Performance Profiling
+
+Comprehensive profiling tools are available to analyze algorithm performance, memory usage, and optimization opportunities:
+
+### Quick Profiling
+```bash
+# Run basic performance analysis
+make profile
+
+# Run optimized build profiling
+make profile-optimized
+
+# Interactive profiling menu
+./profile.sh
+```
+
+### Advanced Profiling Tools
+
+#### Instruments (macOS)
+```bash
+# Generate detailed performance trace
+make profile-instruments
+open instruments_output.trace
+```
+
+#### Valgrind (Linux/macOS)
+```bash
+# Call graph analysis
+make profile-valgrind
+kcachegrind callgrind.out
+
+# Memory leak detection
+make profile-memory
+```
+
+#### Manual Profiling
+```bash
+# With gprof
+g++ -pg -o profiling_gprof profiling_tests.cpp
+./profiling_gprof
+gprof profiling_gprof gmon.out > analysis.txt
+
+# With perf (Linux)
+perf record ./profiling_optimized
+perf report
+```
+
+### Profiling Results Analysis
+
+The profiling suite provides insights into:
+
+- ⏱️ **Execution Time**: Microsecond-level timing analysis
+- 🔄 **Recursive Calls**: Count and patterns of function calls
+- 💾 **Memoization Efficiency**: Hit rates and cache effectiveness
+- 🧠 **Memory Usage**: Memory consumption by grid size
+- 📊 **Scalability**: Performance characteristics as problem size grows
+
+**Sample Output:**
+```
+=== PROFILING RESULTS ===
+Recursive calls: 1799
+Memoization hits: 840
+Boundary checks: 1797
+Total execution time: 4897917 nanoseconds
+Average time per call: 2722 ns
+Memoization hit rate: 46.69%
+```
+
 ![callgraph](image.png)
 
 ## CI/CD Status
@@ -28,6 +96,8 @@ This project uses GitHub Actions for continuous integration. The CI pipeline aut
 - `dungeon-game.cpp` - Original dungeon game implementation
 - `simple_tests.cpp` - Self-contained unit tests with custom test framework
 - `callgraph_generator.cpp` - Generates call traces and visual callgraphs
+- `profiling_tests.cpp` - Comprehensive performance profiling suite
+- `profile.sh` - Interactive profiling script
 - `Makefile` - Build automation
 - `CMakeLists.txt` - CMake build configuration
 
