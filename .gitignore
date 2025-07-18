@@ -176,6 +176,8 @@ test_clang
 profiling_tests
 profiling_optimized
 profiling_debug
+dungeon_game_1d_dp
+comparison_2d_vs_1d
 
 # Callgraph files
 callgraph_trace.txt
