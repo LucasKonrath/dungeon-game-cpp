@@ -51,7 +51,7 @@ The visual callgraph shows the tree structure with:
 | Stack Usage     | O(rows + cols)   | O(1)               | O(1)            |
 | Input Modified  | No               | No                 | Yes             |
 | Readability     | High             | Medium             | Medium          |
-| Performance     | Baseline         | ~2x faster         | ~2.5x faster    |
+| Performance     | Baseline         | ~2x faster         | ~2x faster, slower than 1D dp for larger arrays    |
 | Memory Usage    | Baseline         | ~90-99% less       | 100% less       |
 
 Key Optimizations by Implementation:
@@ -69,7 +69,7 @@ Key Optimizations by Implementation:
 
 3. In-Place DP (Ultimate Optimization):
    • O(1) extra space complexity
-   • Fastest execution due to minimal memory allocation
+   • Fastest execution due to minimal memory allocation for small arrays, slower for larger arrays due to memory access patterns
    • Best cache performance
    • Modifies input array (may not be suitable for all use cases)
 
@@ -89,7 +89,7 @@ Key Optimizations by Implementation:
 
 **3. In-Place DP (Ultimate):**
 - **Best for**: Memory-critical, embedded systems
-- **Pros**: O(1) space, fastest execution, minimal allocation
+- **Pros**: O(1) space, fastest execution for small samples, minimal allocation
 - **Cons**: Modifies input, not suitable when original data needed
 
 **Recommendation**: Use 1D DP for most production scenarios!
