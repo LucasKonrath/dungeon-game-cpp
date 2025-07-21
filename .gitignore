@@ -167,17 +167,20 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# Project specific executables
+# Project-specific executables
 simple_tests
-gtest_tests
 callgraph_generator
-test_gcc
-test_clang
 profiling_tests
 profiling_optimized
 profiling_debug
 dungeon_game_1d_dp
 comparison_2d_vs_1d
+dungeon_game_bfs
+dungeon_game_dfs
+dungeon_game_dijkstra
+dungeon_game_bellman_ford
+dungeon_game_astar
+comprehensive_algorithm_analysis
 
 # Callgraph files
 callgraph_trace.txt
